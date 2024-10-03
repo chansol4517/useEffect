@@ -1,33 +1,34 @@
-/*
-	useEffect
-	리액트 컴포넌트마다의 생명주기를 관리하기 위한 hook
-	생명주기 : 컴포넌트의 생성(Mount), 변경(ReRender), 소멸(UnMount)를 의미
-	- useEffect는 컴포넌트의 생성, 변경, 소멸의 시점에 맞춰 등록된 콜백함수 호출 가능
-	- 각 컴포넌트의 중요한 생명주기 시점마다 원하는 기능을 연결가능
-
-	실무에서 자주 활용되는 생명주기 사례
-	- Mount : Data fetching, window객체에 이벤트핸들러 연결
-	- ReRender : 특정 State값 변경될때만 실행해야 되는 핸들러 연결
-	- UnMount : window객체에 이벤트 핸들러 제거
-
-	useEffect(callback, dependency Array)
-*/
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function App() {
 	console.log('App Render');
-	let [Num, setNum] = useState(0);
+	const [Members, setMembers] = useState([]);
+
+	//아래와 같이 useEffect를 처리하지 않은 상태에서 서버에서 fetching한 데이터를 state에 담으면 무한로딩 발생
+	// fetch("/member.json")
+	// 	.then(data => data.json())
+	// 	.then(json => {
+	// 		console.log(json.members);
+	// 		setMembers(json.members);
+	// 	});
 
 	useEffect(() => {
-		//의존성 배열이 비어있을때는 해당 컴포넌트가 마운트시 한번만 호출됨
-		console.log('의존성 배열이 비어있을때의 콜백함수');
+		//의존성 배열이 비어있는 useEffect문의 콜백함수는 아무리 해당 컴포넌트가 재랜더링되더라도
+		//처음 마운트시 한번만 호출되므로 fetch함수가 처음 한번만 데이터를 가져오고 더이상 무한호출에 빠지지 않음
+		//실무에서 React-Query를 쓰기 전까지는 제일 많이 쓰이는 리액트 개발 패턴 (중요)
+		fetch('/member.json')
+			.then(data => data.json())
+			.then(json => {
+				setMembers(json.members);
+			});
 	}, []);
 
 	return (
 		<>
 			<h1>useEffect</h1>
-			<h2>{Num}</h2>
-			<button onClick={() => setNum(Num + 1)}>+</button>
+			{Members.map((data, idx) => (
+				<h2 key={idx}>{data.name}</h2>
+			))}
 		</>
 	);
 }
